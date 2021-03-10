@@ -4,17 +4,19 @@
 #ifndef RTSP_DIGEST_AUTHENTICATION_H
 #define RTSP_DIGEST_AUTHENTICATION_H
 
+#include "Authenticator.h"
+
 #include <cstdint>
 #include <string>
 
 namespace xop
 {
 
-class DigestAuthentication
+class DigestAuthenticator : public Authenticator
 {
 public:
-	DigestAuthentication(std::string realm, std::string username, std::string password);
-	virtual ~DigestAuthentication();
+	DigestAuthenticator(std::string realm, std::string username, std::string password);
+	virtual ~DigestAuthenticator();
 
 	std::string GetRealm() const
 	{ return realm_; }
@@ -27,6 +29,8 @@ public:
 
 	std::string GetNonce();
 	std::string GetResponse(std::string nonce, std::string cmd, std::string url);
+
+  bool Authenticate(RtspRequest *rtsp_request, std::string &nonce);
 
 private:
 	std::string realm_;
