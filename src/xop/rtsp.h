@@ -6,6 +6,7 @@
 
 #include <cstdio>
 #include <string>
+#include "Authenticator.h"
 #include "MediaSession.h"
 #include "net/Acceptor.h"
 #include "net/EventLoop.h"
@@ -26,19 +27,14 @@ struct RtspUrlInfo
 class Rtsp : public std::enable_shared_from_this<Rtsp>
 {
 public:
-	Rtsp() : has_auth_info_(false) {}
+	Rtsp() : has_auth_info_(false), authenticator_(nullptr) {}
 	virtual ~Rtsp() {}
 
-	virtual void SetAuthConfig(std::string realm, std::string username, std::string password)
-	{
-		realm_ = realm;
-		username_ = username;
-		password_ = password;
+  virtual void SetAuthenticator(std::shared_ptr<Authenticator>authenticator) 
+  {
+    std::cerr << "Setting Authenticator" << std::endl;
+    authenticator_ = authenticator;
 		has_auth_info_ = true;
-
-		if (realm_=="" || username=="") {
-			has_auth_info_ = false;
-		}
 	}
 
 	virtual void SetVersion(std::string version) // SDP Session Name
@@ -93,9 +89,7 @@ protected:
 	{ return nullptr; }
 
 	bool has_auth_info_ = false;
-	std::string realm_;
-	std::string username_;
-	std::string password_;
+  std::shared_ptr<Authenticator> authenticator_;
 	std::string version_;
 	struct RtspUrlInfo rtsp_url_info_;
 };
