@@ -130,7 +130,7 @@ bool H265Source::HandleFrame(MediaChannelId channelId, AVFrame frame)
 }
 
 
-uint32_t H265Source::GetTimestamp()
+int64_t H265Source::GetTimestamp()
 {
 /* #if defined(__linux) || defined(__linux__) 
 	struct timeval tv = {0};
@@ -141,6 +141,6 @@ uint32_t H265Source::GetTimestamp()
 	//auto time_point = chrono::time_point_cast<chrono::milliseconds>(chrono::system_clock::now());
 	//auto time_point = chrono::time_point_cast<chrono::milliseconds>(chrono::steady_clock::now());
 	auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::steady_clock::now());
-	return (uint32_t)((time_point.time_since_epoch().count() + 500) / 1000 * 90);
+	return (int64_t)((time_point.time_since_epoch().count() + 500) / 1000 * 90);
 //#endif 
 }

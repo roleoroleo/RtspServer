@@ -28,7 +28,7 @@ public:
 
 	bool HandleFrame(MediaChannelId channelId, AVFrame frame);
 
-	static uint32_t GetTimestamp();
+	static int64_t GetTimestamp();
 	 
 private:
 	H265Source(uint32_t framerate);
