@@ -326,6 +326,31 @@ std::string RtspRequest::GetRtspUrlSuffix() const
 	return "";
 }
 
+std::string RtspRequest::GetRtspUrlSession() const 
+{
+	auto iter = request_line_param_.find("url_suffix");
+	if(iter != request_line_param_.end()) {
+    int found = iter->second.first.find('?');
+    if (found != std::string::npos)
+      return iter->second.first.substr(0, found);
+		return iter->second.first;
+	}
+
+	return "";
+}
+
+std::string RtspRequest::GetRtspUrlQueryString() const 
+{
+	auto iter = request_line_param_.find("url_suffix");
+	if(iter != request_line_param_.end()) {
+    int found = iter->second.first.find('?');
+    if (found != std::string::npos)
+      return iter->second.first.substr(found+1, std::string::npos);
+	}
+
+	return "";
+}
+
 std::string RtspRequest::GetAuthResponse() const
 {
 	return auth_response_;

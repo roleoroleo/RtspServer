@@ -58,6 +58,8 @@ public:
 	std::string GetRtspUrl() const;
 
 	std::string GetRtspUrlSuffix() const;
+	std::string GetRtspUrlSession() const;
+	std::string GetRtspUrlQueryString() const;
 
 	std::string GetIp() const;
 
