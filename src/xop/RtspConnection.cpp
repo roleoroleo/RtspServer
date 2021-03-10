@@ -42,10 +42,10 @@ RtspConnection::RtspConnection(std::shared_ptr<Rtsp> rtsp, TaskScheduler *task_s
 	}
 
 	has_auth_ = true;
-	if (rtsp->has_auth_info_) {
+	if (rtsp->authenticator_ != nullptr) {
 		has_auth_ = false;
-		auth_info_.reset(new DigestAuthentication(rtsp->realm_, rtsp->username_, rtsp->password_));
-	}	
+    authenticator_ = rtsp->authenticator_;
+	}
 }
 
 RtspConnection::~RtspConnection()
@@ -64,17 +64,17 @@ bool RtspConnection::OnRead(BufferReader& buffer)
 
 	if (conn_mode_ == RTSP_SERVER) {
 		if (!HandleRtspRequest(buffer)){
-			return false; 
+			return false;
 		}
 	}
 	else if (conn_mode_ == RTSP_PUSHER) {
-		if (!HandleRtspResponse(buffer)) {           
+		if (!HandleRtspResponse(buffer)) {
 			return false;
 		}
 	}
 
 	if (buffer.ReadableBytes() > MAX_RTSP_MESSAGE_SIZE) {
-		buffer.RetrieveAll(); 
+		buffer.RetrieveAll();
 	}
 
 	return true;
@@ -89,7 +89,7 @@ void RtspConnection::OnClose()
 			if (media_session) {
 				media_session->RemoveClient(this->GetSocket());
 			}
-		}	
+		}
 	}
 
 	for(int chn=0; chn<MAX_MEDIA_CHANNEL; chn++) {
@@ -118,7 +118,7 @@ bool RtspConnection::HandleRtspRequest(BufferReader& buffer)
 		else if(!rtsp_request_->GotAll()) {
 			return true;
 		}
-        
+
 		switch (method)
 		{
 		case RtspRequest::OPTIONS:
@@ -160,7 +160,7 @@ bool RtspConnection::HandleRtspResponse(BufferReader& buffer)
 	string str(buffer.Peek(), buffer.ReadableBytes());
 	if (str.find("rtsp") != string::npos || str.find("RTSP") != string::npos) {
 		cout << str << endl;
-	}		
+	}
 #endif
 
 	if (rtsp_response_->ParseResponse(&buffer)) {
@@ -170,7 +170,7 @@ bool RtspConnection::HandleRtspResponse(BufferReader& buffer)
 		case RtspResponse::OPTIONS:
 			if (conn_mode_ == RTSP_PUSHER) {
 				SendAnnounce();
-			}             
+			}
 			break;
 		case RtspResponse::ANNOUNCE:
 		case RtspResponse::DESCRIBE:
@@ -182,7 +182,7 @@ bool RtspConnection::HandleRtspResponse(BufferReader& buffer)
 		case RtspResponse::RECORD:
 			HandleRecord();
 			break;
-		default:            
+		default:
 			break;
 		}
 	}
@@ -204,16 +204,16 @@ void RtspConnection::SendRtspMessage(std::shared_ptr<char> buf, uint32_t size)
 }
 
 void RtspConnection::HandleRtcp(BufferReader& buffer)
-{    
+{
 	char *peek = buffer.Peek();
 	if(peek[0] == '$' &&  buffer.ReadableBytes() > 4) {
 		uint32_t pkt_size = peek[2]<<8 | peek[3];
 		if(pkt_size +4 >=  buffer.ReadableBytes()) {
-			buffer.Retrieve(pkt_size +4);  
+			buffer.Retrieve(pkt_size +4);
 		}
 	}
 }
- 
+
 void RtspConnection::HandleRtcp(SOCKET sockfd)
 {
 	char buf[1024] = {0};
@@ -226,12 +226,12 @@ void RtspConnection::HandleCmdOption()
 {
 	std::shared_ptr<char> res(new char[2048], std::default_delete<char[]>());
 	int size = rtsp_request_->BuildOptionRes(res.get(), 2048);
-	this->SendRtspMessage(res, size);	
+	this->SendRtspMessage(res, size);
 }
 
 void RtspConnection::HandleCmdDescribe()
 {
-	if (auth_info_!=nullptr && !HandleAuthentication()) {
+	if (authenticator_!=nullptr && !HandleAuthentication()) {
 		return;
 	}
 
@@ -245,9 +245,9 @@ void RtspConnection::HandleCmdDescribe()
 
 	auto rtsp = rtsp_.lock();
 	if (rtsp) {
-		media_session = rtsp->LookMediaSession(rtsp_request_->GetRtspUrlSuffix());
+		media_session = rtsp->LookMediaSession(rtsp_request_->GetRtspUrlSession());
 	}
-	
+
 	if(!rtsp || !media_session) {
 		size = rtsp_request_->BuildNotFoundRes(res.get(), 4096);
 	}
@@ -268,7 +268,7 @@ void RtspConnection::HandleCmdDescribe()
 			size = rtsp_request_->BuildServerErrorRes(res.get(), 4096);
 		}
 		else {
-			size = rtsp_request_->BuildDescribeRes(res.get(), 4096, sdp.c_str());		
+			size = rtsp_request_->BuildDescribeRes(res.get(), 4096, sdp.c_str());
 		}
 	}
 
@@ -278,7 +278,7 @@ void RtspConnection::HandleCmdDescribe()
 
 void RtspConnection::HandleCmdSetup()
 {
-	if (auth_info_ != nullptr && !HandleAuthentication()) {
+	if (authenticator_ != nullptr && !HandleAuthentication()) {
 		return;
 	}
 
@@ -340,7 +340,7 @@ void RtspConnection::HandleCmdSetup()
 			uint16_t serRtcpPort = rtp_conn_->GetRtcpPort(channel_id);
 			size = rtsp_request_->BuildSetupUdpRes(res.get(), 4096, serRtpPort, serRtcpPort, session_id);
 		}
-		else {          
+		else {
 			goto transport_unsupport;
 		}
 	}
@@ -361,7 +361,7 @@ server_error:
 
 void RtspConnection::HandleCmdPlay()
 {
-	if (auth_info_ != nullptr) {
+	if (authenticator_ != nullptr) {
 		if (!HandleAuthentication()) {
 			return;
 		}
@@ -411,10 +411,13 @@ void RtspConnection::HandleCmdGetParamter()
 
 bool RtspConnection::HandleAuthentication()
 {
-	if (auth_info_ != nullptr && !has_auth_) {
-		std::string cmd = rtsp_request_->MethodToString[rtsp_request_->GetMethod()];
-		std::string url = rtsp_request_->GetRtspUrl();
-
+	if (authenticator_ != nullptr && !has_auth_) {
+    if (authenticator_->Authenticate(rtsp_request_, _nonce)) {
+			has_auth_ = true;
+    } else {
+      return false;
+    }
+#if 0
 		if (_nonce.size() > 0 && (auth_info_->GetResponse(_nonce, cmd, url) == rtsp_request_->GetAuthResponse())) {
 			_nonce.clear();
 			has_auth_ = true;
@@ -426,6 +429,7 @@ bool RtspConnection::HandleAuthentication()
 			SendRtspMessage(res, size);
 			return false;
 		}
+#endif
 	}
 
 	return true;
@@ -441,7 +445,7 @@ void RtspConnection::SendOptions(ConnectionMode mode)
 	if (!rtsp) {
 		HandleClose();
 		return;
-	}	
+	}
 
 	conn_mode_ = mode;
 	rtsp_response_->SetUserAgent(USER_AGENT);
@@ -506,7 +510,7 @@ void RtspConnection::SendSetup()
 	if (rtsp) {
 		media_session = rtsp->LookMediaSession(session_id_);
 	}
-	
+
 	if (!rtsp || !media_session) {
 		HandleClose();
 		return;

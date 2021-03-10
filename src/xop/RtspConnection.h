@@ -8,7 +8,7 @@
 #include "net/TcpConnection.h"
 #include "RtpConnection.h"
 #include "RtspMessage.h"
-#include "DigestAuthentication.h"
+#include "Authenticator.h"
 #include "rtsp.h"
 #include <iostream>
 #include <functional>
@@ -120,11 +120,11 @@ private:
 
 	bool has_auth_ = true;
 	std::string _nonce;
-	std::unique_ptr<DigestAuthentication> auth_info_;
+	std::shared_ptr<Authenticator> authenticator_;
 
 	std::shared_ptr<Channel>       rtp_channel_;
 	std::shared_ptr<Channel>       rtcp_channels_[MAX_MEDIA_CHANNEL];
-	std::unique_ptr<RtspRequest>   rtsp_request_;
+	std::shared_ptr<RtspRequest>   rtsp_request_;
 	std::unique_ptr<RtspResponse>  rtsp_response_;
 	std::shared_ptr<RtpConnection> rtp_conn_;
 };
