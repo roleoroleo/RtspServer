@@ -28,7 +28,7 @@ public:
 
 	bool HandleFrame(MediaChannelId channel_id, AVFrame frame);
 
-	static uint32_t GetTimestamp();
+	static int64_t GetTimestamp();
 
 private:
 	G711ASource();
