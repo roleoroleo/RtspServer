@@ -118,7 +118,7 @@ public:
 	{
 		std::lock_guard<std::mutex> lock(mutex_);
 		std::string addr_str;
-		struct sockaddr_in addr = { 0 };
+		struct sockaddr_in addr = {};
 		std::random_device rd;
 
 		for (int n = 0; n <= 10; n++) {
