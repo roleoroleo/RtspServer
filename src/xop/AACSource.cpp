@@ -46,7 +46,7 @@ string AACSource::GetMediaDescription(uint16_t port)
 
 static uint32_t AACSampleRate[16] =
 {
-	97000, 88200, 64000, 48000,
+	96000, 88200, 64000, 48000,
 	44100, 32000, 24000, 22050,
 	16000, 12000, 11025, 8000,
 	7350, 0, 0, 0 /*reserved */
@@ -124,11 +124,11 @@ bool AACSource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 	return true;
 }
 
-uint32_t AACSource::GetTimestamp(uint32_t sampleRate)
+int64_t AACSource::GetTimestamp(uint32_t sampleRate)
 {
 	//auto time_point = chrono::time_point_cast<chrono::milliseconds>(chrono::high_resolution_clock::now());
 	//return (uint32_t)(time_point.time_since_epoch().count() * sampleRate / 1000);
 
 	auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::steady_clock::now());
-	return (uint32_t)((time_point.time_since_epoch().count()+500) / 1000 * sampleRate / 1000);
+	return (int64_t)((time_point.time_since_epoch().count()+500) / 1000 * sampleRate / 1000);
 }

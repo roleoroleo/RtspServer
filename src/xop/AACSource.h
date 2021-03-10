@@ -28,7 +28,7 @@ public:
 
     bool HandleFrame(MediaChannelId channel_id, AVFrame frame);
 
-    static uint32_t GetTimestamp(uint32_t samplerate =44100);
+    static int64_t GetTimestamp(uint32_t samplerate =44100);
 
 private:
     AACSource(uint32_t samplerate, uint32_t channels, bool has_adts);
