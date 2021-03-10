@@ -57,20 +57,19 @@ bool H264Source::HandleFrame(MediaChannelId channel_id, AVFrame frame)
     }    
 
     if (frame_size <= MAX_RTP_PAYLOAD_SIZE) {
-        RtpPacket rtp_pkt;
-	    rtp_pkt.type = frame.type;
-	    rtp_pkt.timestamp = frame.timestamp;
-	    rtp_pkt.size = frame_size + 4 + RTP_HEADER_SIZE;
-	    rtp_pkt.last = 1;
-        memcpy(rtp_pkt.data.get()+4+RTP_HEADER_SIZE, frame_buf, frame_size); 
+      RtpPacket rtp_pkt;
+      rtp_pkt.type = frame.type;
+      rtp_pkt.timestamp = frame.timestamp;
+      rtp_pkt.size = frame_size + 4 + RTP_HEADER_SIZE;
+      rtp_pkt.last = 1;
+      memcpy(rtp_pkt.data.get()+4+RTP_HEADER_SIZE, frame_buf, frame_size); 
 
-        if (send_frame_callback_) {
-		    if (!send_frame_callback_(channel_id, rtp_pkt)) {
-			    return false;
-		    }               
-        }
-    }
-    else {
+      if (send_frame_callback_) {
+        if (!send_frame_callback_(channel_id, rtp_pkt)) {
+          return false;
+        }               
+      }
+    } else {
         char FU_A[2] = {0};
 
         FU_A[0] = (frame_buf[0] & 0xE0) | 28;
@@ -124,7 +123,7 @@ bool H264Source::HandleFrame(MediaChannelId channel_id, AVFrame frame)
     return true;
 }
 
-uint32_t H264Source::GetTimestamp()
+int64_t H264Source::GetTimestamp()
 {
 /* #if defined(__linux) || defined(__linux__)
     struct timeval tv = {0};
@@ -133,7 +132,7 @@ uint32_t H264Source::GetTimestamp()
     return ts;
 #else  */
     auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::steady_clock::now());
-    return (uint32_t)((time_point.time_since_epoch().count() + 500) / 1000 * 90 );
+    return (int64_t)((time_point.time_since_epoch().count() + 500) / 1000 * 90 );
 //#endif
 }
  
