@@ -562,7 +562,19 @@ int RtspRequest::BuildUnsupportedRes(const char* buf, int buf_size)
 	return (int)strlen(buf);
 }
 
-int RtspRequest::BuildUnauthorizedRes(const char* buf, int buf_size, const char* realm, const char* nonce)
+size_t RtspRequest::BuildUnauthorizedRes(const char *buf, size_t buf_size)
+{
+	snprintf((char*)buf, buf_size,
+			"RTSP/1.0 401 Unauthorized\r\n"
+			"CSeq: %d\r\n"
+			"\r\n",
+			this->GetCSeq()
+			);
+
+	return strlen(buf);
+}
+
+size_t RtspRequest::BuildUnauthorizedRes(const char* buf, size_t buf_size, const char* realm, const char* nonce)
 {
 	memset((void*)buf, 0, buf_size);
 	snprintf((char*)buf, buf_size,
@@ -574,7 +586,7 @@ int RtspRequest::BuildUnauthorizedRes(const char* buf, int buf_size, const char*
 			realm,
 			nonce);
 
-	return (int)strlen(buf);
+	return strlen(buf);
 }
 
 bool RtspResponse::ParseResponse(xop::BufferReader *buffer)

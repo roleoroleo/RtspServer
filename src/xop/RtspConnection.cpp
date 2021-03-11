@@ -415,21 +415,11 @@ bool RtspConnection::HandleAuthentication()
     if (authenticator_->Authenticate(rtsp_request_, _nonce)) {
 			has_auth_ = true;
     } else {
+      std::shared_ptr<char> res(new char[4096], std::default_delete<char[]>());
+      size_t size = authenticator_->GetFailedResponse(rtsp_request_, res, 4096);
+      SendRtspMessage(res, size);
       return false;
     }
-#if 0
-		if (_nonce.size() > 0 && (auth_info_->GetResponse(_nonce, cmd, url) == rtsp_request_->GetAuthResponse())) {
-			_nonce.clear();
-			has_auth_ = true;
-		}
-		else {
-			std::shared_ptr<char> res(new char[4096], std::default_delete<char[]>());
-			_nonce = auth_info_->GetNonce();
-			int size = rtsp_request_->BuildUnauthorizedRes(res.get(), 4096, auth_info_->GetRealm().c_str(), _nonce.c_str());
-			SendRtspMessage(res, size);
-			return false;
-		}
-#endif
 	}
 
 	return true;

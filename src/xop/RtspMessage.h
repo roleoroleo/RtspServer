@@ -87,7 +87,8 @@ public:
 	int BuildNotFoundRes(const char* buf, int buf_size);
 	int BuildServerErrorRes(const char* buf, int buf_size);
 	int BuildUnsupportedRes(const char* buf, int buf_size);
-	int BuildUnauthorizedRes(const char* buf, int buf_size, const char* realm, const char* nonce);
+	size_t BuildUnauthorizedRes(const char* buf, size_t buf_size);
+	size_t BuildUnauthorizedRes(const char* buf, size_t buf_size, const char* realm, const char* nonce);
 
 private:
 	bool ParseRequestLine(const char* begin, const char* end);

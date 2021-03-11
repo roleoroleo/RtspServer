@@ -30,7 +30,8 @@ public:
 	std::string GetNonce();
 	std::string GetResponse(std::string nonce, std::string cmd, std::string url);
 
-  bool Authenticate(RtspRequest *rtsp_request, std::string &nonce);
+  bool Authenticate(std::shared_ptr<RtspRequest> request, std::string &nonce);
+  size_t GetFailedResponse(std::shared_ptr<RtspRequest> request, std::shared_ptr<char> buf, size_t size);
 
 private:
 	std::string realm_;
