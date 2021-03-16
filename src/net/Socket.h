@@ -9,9 +9,7 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h> 
-#include <netinet/ether.h>   
-#include <netinet/ip.h>  
-#include <netpacket/packet.h>   
+#include <netinet/ip.h>
 #include <arpa/inet.h>
 #include <net/ethernet.h>   
 #include <net/route.h>  
