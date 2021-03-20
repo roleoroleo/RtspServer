@@ -1,0 +1,21 @@
+name: GCC
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup
+        run: |
+          mkdir build
+          cd build
+          cmake ../
+          cd ..
+      - name: Build
+        run: |
+          cd build
+          make -j 4 -k

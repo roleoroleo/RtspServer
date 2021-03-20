@@ -3,7 +3,7 @@
 
 #include "EpollTaskScheduler.h"
 
-#if defined(__linux) || defined(__linux__) 
+#if defined(__linux) || defined(__linux__)
 #include <sys/epoll.h>
 #include <errno.h>
 #endif
@@ -13,7 +13,7 @@ using namespace xop;
 EpollTaskScheduler::EpollTaskScheduler(int id)
 	: TaskScheduler(id)
 {
-#if defined(__linux) || defined(__linux__) 
+#if defined(__linux) || defined(__linux__)
     epollfd_ = epoll_create(1024);
  #endif
     this->UpdateChannel(wakeup_channel_);
@@ -27,7 +27,7 @@ EpollTaskScheduler::~EpollTaskScheduler()
 void EpollTaskScheduler::UpdateChannel(ChannelPtr channel)
 {
 	std::lock_guard<std::mutex> lock(mutex_);
-#if defined(__linux) || defined(__linux__) 
+#if defined(__linux) || defined(__linux__)
 	int fd = channel->GetSocket();
 	if(channels_.find(fd) != channels_.end()) {
 		if(channel->IsNoneEvent()) {
@@ -49,7 +49,7 @@ void EpollTaskScheduler::UpdateChannel(ChannelPtr channel)
 
 void EpollTaskScheduler::Update(int operation, ChannelPtr& channel)
 {
-#if defined(__linux) || defined(__linux__) 
+#if defined(__linux) || defined(__linux__)
 	struct epoll_event event = {0};
 
 	if(operation != EPOLL_CTL_DEL) {
@@ -66,7 +66,7 @@ void EpollTaskScheduler::Update(int operation, ChannelPtr& channel)
 void EpollTaskScheduler::RemoveChannel(ChannelPtr& channel)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-#if defined(__linux) || defined(__linux__) 
+#if defined(__linux) || defined(__linux__)
 	int fd = channel->GetSocket();
 
 	if(channels_.find(fd) != channels_.end()) {
@@ -78,7 +78,7 @@ void EpollTaskScheduler::RemoveChannel(ChannelPtr& channel)
 
 bool EpollTaskScheduler::HandleEvent(int timeout)
 {
-#if defined(__linux) || defined(__linux__) 
+#if defined(__linux) || defined(__linux__)
 	struct epoll_event events[512] = {0};
 	int num_events = -1;
 

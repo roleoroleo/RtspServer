@@ -1,0 +1,16 @@
+task:
+  name: freebsd-build
+  freebsd_instance:
+    image_family: freebsd-12-2
+
+  prepare_script:
+    - pkg install -yq git cmake
+
+  configure_script:
+    - mkdir build
+    - cd build
+    - cmake ../
+
+  build_script:
+    - cd build
+    - make -j3 -k

@@ -4,14 +4,12 @@
 #ifndef XOP_SOCKET_H
 #define XOP_SOCKET_H
 
-#if defined(__linux) || defined(__linux__) 
+#if defined(__linux) || defined(__linux__) || defined(__FreeBSD__)
 #include <sys/types.h>         
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h> 
-#include <netinet/ether.h>   
-#include <netinet/ip.h>  
-#include <netpacket/packet.h>   
+#include <netinet/ip.h>
 #include <arpa/inet.h>
 #include <net/ethernet.h>   
 #include <net/route.h>  
