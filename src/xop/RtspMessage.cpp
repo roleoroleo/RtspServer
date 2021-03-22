@@ -96,7 +96,7 @@ bool RtspRequest::ParseRequestLine(const char* begin, const char* end)
 	// parse url
 	uint16_t port = 0;
 	char ip[64] = {0};
-	char suffix[64] = {0};
+	char suffix[256] = {0};
 
 	if(sscanf(url+7, "%[^:]:%hu/%s", ip, &port, suffix) == 3) {
 
