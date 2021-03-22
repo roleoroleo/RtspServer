@@ -100,7 +100,26 @@ void SocketUtil::SetSendBufSize(SOCKET sockfd, int size)
 
 void SocketUtil::SetRecvBufSize(SOCKET sockfd, int size)
 {
-    setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&size, sizeof(size));
+    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&size, sizeof(size)) < 0) 
+      std::cerr << "Error setting SO_RCVBUF to " << size << std::endl;
+}
+
+int SocketUtil::GetSendBufSize(SOCKET sockfd)
+{
+    int optval;
+    socklen_t optlen = sizeof(optval);
+    if (getsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &optval, &optlen) < 0)
+      std::cerr << "Error getting SO_SNDBUF " << std::endl;
+    return optval;
+}
+
+int SocketUtil::GetRecvBufSize(SOCKET sockfd)
+{
+    int optval;
+    socklen_t optlen = sizeof(optval);
+    if (getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &optval, &optlen) < 0)
+      std::cerr << "Error getting SO_RCVBUF " << std::endl;
+    return optval;
 }
 
 std::string SocketUtil::GetPeerIp(SOCKET sockfd)

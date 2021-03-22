@@ -23,6 +23,8 @@ public:
     static void SetNoSigpipe(SOCKET sockfd);
     static void SetSendBufSize(SOCKET sockfd, int size);
     static void SetRecvBufSize(SOCKET sockfd, int size);
+    static int GetSendBufSize(SOCKET sockfd);
+    static int GetRecvBufSize(SOCKET sockfd);
     static std::string GetPeerIp(SOCKET sockfd);
     static std::string GetSocketIp(SOCKET sockfd);
     static int GetSocketAddr(SOCKET sockfd, struct sockaddr_in* addr);
