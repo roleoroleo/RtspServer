@@ -108,7 +108,8 @@ bool RtpConnection::SetupRtpOverUdp(MediaChannelId channel_id, uint16_t rtp_port
 		break;
 	}
 
-	SocketUtil::SetSendBufSize(rtpfd_[channel_id], 50*1024);
+	SocketUtil::SetSendBufSize(rtpfd_[channel_id], 200*1024);
+  std::cerr << "SendBufSize is " << SocketUtil::GetSendBufSize(rtpfd_[channel_id]) << std::endl;
 
 	peer_rtp_addr_[channel_id].sin_family = AF_INET;
 	peer_rtp_addr_[channel_id].sin_addr.s_addr = peer_addr_.sin_addr.s_addr;
