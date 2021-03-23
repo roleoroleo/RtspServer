@@ -6,7 +6,7 @@ using namespace xop;
 TcpConnection::TcpConnection(TaskScheduler *task_scheduler, SOCKET sockfd)
 	: task_scheduler_(task_scheduler)
 	, read_buffer_(new BufferReader)
-	, write_buffer_(new BufferWriter(500))
+	, write_buffer_(new BufferWriter(50000))
 	, channel_(new Channel(sockfd))
 {
 	is_closed_ = false;
@@ -36,7 +36,8 @@ void TcpConnection::Send(std::shared_ptr<char> data, uint32_t size)
 {
 	if (!is_closed_) {
 		mutex_.lock();
-		write_buffer_->Append(data, size);
+		if (!write_buffer_->Append(data, size))
+      std::cerr << "write_buffer failed" << std::endl;
 		mutex_.unlock();
 
 		this->HandleWrite();
@@ -47,7 +48,8 @@ void TcpConnection::Send(const char *data, uint32_t size)
 {
 	if (!is_closed_) {
 		mutex_.lock();
-		write_buffer_->Append(data, size);
+		if ( !write_buffer_->Append(data, size))
+      std::cerr << "write_buffer failed" << std::endl;
 		mutex_.unlock();
 
 		this->HandleWrite();
