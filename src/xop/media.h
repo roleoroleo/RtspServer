@@ -31,14 +31,14 @@ enum FrameType
 struct AVFrame
 {	
 	AVFrame(uint32_t size = 0)
-		:buffer(new uint8_t[size + 1], std::default_delete< uint8_t[]>())
+		:buffer(new uint8_t[size + 1])
 	{
 		this->size = size;
 		type = 0;
 		timestamp = 0;
 	}
 
-	std::shared_ptr<uint8_t> buffer; /* 帧数据 */
+	std::shared_ptr<uint8_t[]> buffer; /* 帧数据 */
 	uint32_t size;				     /* 帧大小 */
 	uint8_t  type;				     /* 帧类型 */	
 	int64_t timestamp;		  	     /* 时间戳 */
