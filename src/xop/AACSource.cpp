@@ -86,7 +86,7 @@ string AACSource::GetAttribute()  // RFC 3640
 
 bool AACSource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 {
-	if (frame.size > (MAX_RTP_PAYLOAD_SIZE-AU_SIZE)) {
+	if (frame.buffer.size() > (MAX_RTP_PAYLOAD_SIZE-AU_SIZE)) {
 		return false;
 	}
 
@@ -95,8 +95,8 @@ bool AACSource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 		adts_size = ADTS_SIZE;
 	}
 
-	uint8_t *frame_buf = frame.buffer.get() + adts_size; 
-	uint32_t frame_size = frame.size - adts_size;
+	uint8_t *frame_buf = frame.buffer.data() + adts_size;
+	uint32_t frame_size = frame.buffer.size() - adts_size;
 
 	char AU[AU_SIZE] = { 0 };
 	AU[0] = 0x00;
