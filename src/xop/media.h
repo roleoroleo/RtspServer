@@ -30,12 +30,12 @@ enum FrameType
 };
 
 struct AVFrame
-{	
-	AVFrame(uint32_t size = 0)
+{
+	AVFrame() : type(0), timestamp(0) {}
+	AVFrame(const uint8_t *data, size_t size) : AVFrame()
 	{
 		buffer.reserve(size);
-		type = 0;
-		timestamp = 0;
+		buffer.assign(data, data + size);
 	}
 
 	std::vector<uint8_t> buffer;     /* 帧数据 */
