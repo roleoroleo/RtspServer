@@ -4,7 +4,8 @@
 #ifndef XOP_MEDIA_H
 #define XOP_MEDIA_H
 
-#include <memory>
+#include <cstdint>
+#include <vector>
 
 namespace xop
 {
@@ -31,16 +32,14 @@ enum FrameType
 struct AVFrame
 {	
 	AVFrame(uint32_t size = 0)
-		:buffer(new uint8_t[size + 1])
 	{
-		this->size = size;
+		buffer.reserve(size);
 		type = 0;
 		timestamp = 0;
 	}
 
-	std::shared_ptr<uint8_t[]> buffer; /* 帧数据 */
-	uint32_t size;				     /* 帧大小 */
-	uint8_t  type;				     /* 帧类型 */	
+	std::vector<uint8_t> buffer;     /* 帧数据 */
+	uint8_t  type;				     /* 帧类型 */
 	int64_t timestamp;		  	     /* 时间戳 */
 };
 

@@ -47,12 +47,12 @@ string G711ASource::GetAttribute()
 
 bool G711ASource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 {
-	if (frame.size > MAX_RTP_PAYLOAD_SIZE) {
+	if (frame.buffer.size() > MAX_RTP_PAYLOAD_SIZE) {
 		return false;
 	}
 
-	uint8_t *frame_buf  = frame.buffer.get();
-	uint32_t frame_size = frame.size;
+	uint8_t *frame_buf  = frame.buffer.data();
+	uint32_t frame_size = frame.buffer.size();
 
 	RtpPacket rtp_pkt;
 	rtp_pkt.type = frame.type;
