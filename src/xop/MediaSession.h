@@ -73,7 +73,7 @@ public:
 
 	uint16_t GetMulticastPort(MediaChannelId channel_id) const
 	{
-		if (channel_id >= MAX_MEDIA_CHANNEL) {
+		if (channel_id >= MediaChannelId(MAX_MEDIA_CHANNEL)) {
 			return 0;
 		}         
 		return multicast_port_[channel_id];
