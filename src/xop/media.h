@@ -32,7 +32,7 @@ enum FrameType
 struct AVFrame
 {
 	AVFrame() : type(0), timestamp(0) {}
-	AVFrame(const uint8_t *data, size_t size) : AVFrame()
+	AVFrame(const uint8_t *data, std::size_t size) : AVFrame()
 	{
 		buffer.reserve(size);
 		buffer.assign(data, data + size);
