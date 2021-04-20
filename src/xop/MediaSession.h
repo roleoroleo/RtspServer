@@ -30,8 +30,8 @@ class MediaSession
 {
 public:
 	using Ptr = std::shared_ptr<MediaSession>;
-	using NotifyConnectedCallback = std::function<void (MediaSessionId sessionId, std::string peer_ip, uint16_t peer_port)> ;
-	using NotifyDisconnectedCallback = std::function<void (MediaSessionId sessionId, std::string peer_ip, uint16_t peer_port)> ;
+	using NotifyConnectedCallback = std::function<void (MediaSessionId sessionId, const std::string &peer_ip, uint16_t peer_port)> ;
+	using NotifyDisconnectedCallback = std::function<void (MediaSessionId sessionId, const std::string &peer_ip, uint16_t peer_port)> ;
 
 	static MediaSession* CreateNew(std::string url_suffix="live");
 	virtual ~MediaSession();
