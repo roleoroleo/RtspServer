@@ -21,7 +21,10 @@ EpollTaskScheduler::EpollTaskScheduler(int id)
 
 EpollTaskScheduler::~EpollTaskScheduler()
 {
-	
+  if (epollfd_ >= 0) {
+    close(epollfd_);
+    epollfd_ = -1;
+  }
 }
 
 void EpollTaskScheduler::UpdateChannel(ChannelPtr channel)

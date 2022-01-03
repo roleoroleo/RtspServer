@@ -30,7 +30,7 @@ TaskScheduler::TaskScheduler(int id)
 
 TaskScheduler::~TaskScheduler()
 {
-	
+  wakeup_pipe_->Close();
 }
 
 void TaskScheduler::Start()
