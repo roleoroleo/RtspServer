@@ -107,15 +107,15 @@ bool AACSource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 	RtpPacket rtp_pkt;
 	rtp_pkt.type = frame.type;
 	rtp_pkt.timestamp = frame.timestamp;
-	rtp_pkt.size = frame_size + 4 + RTP_HEADER_SIZE + AU_SIZE;
+	rtp_pkt.size = frame_size + RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE + AU_SIZE;
 	rtp_pkt.last = 1;
 
-	rtp_pkt.data.get()[4 + RTP_HEADER_SIZE + 0] = AU[0];
-	rtp_pkt.data.get()[4 + RTP_HEADER_SIZE + 1] = AU[1];
-	rtp_pkt.data.get()[4 + RTP_HEADER_SIZE + 2] = AU[2];
-	rtp_pkt.data.get()[4 + RTP_HEADER_SIZE + 3] = AU[3];
+	rtp_pkt.data.get()[RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE + 0] = AU[0];
+	rtp_pkt.data.get()[RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE + 1] = AU[1];
+	rtp_pkt.data.get()[RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE + 2] = AU[2];
+	rtp_pkt.data.get()[RTP_TCP_HEAD_SIZE + RTP_HEADER_SIZE + 3] = AU[3];
 
-	memcpy(rtp_pkt.data.get()+4+RTP_HEADER_SIZE+AU_SIZE, frame_buf, frame_size);
+	memcpy(rtp_pkt.data.get()+RTP_TCP_HEAD_SIZE+RTP_HEADER_SIZE+AU_SIZE, frame_buf, frame_size);
 
 	if (send_frame_callback_) {
 		send_frame_callback_(channel_id, rtp_pkt);

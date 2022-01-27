@@ -26,7 +26,7 @@ public:
 
 	virtual std::string GetAttribute(); 
 
-	bool HandleFrame(MediaChannelId channelId, AVFrame frame);
+	virtual bool HandleFrame(MediaChannelId channelId, AVFrame frame);
 
 	static int64_t GetTimestamp();
 	 
