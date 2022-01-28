@@ -46,8 +46,8 @@ string VP8Source::GetAttribute()
 
 bool VP8Source::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 {
-    uint8_t* frame_buf = frame.buffer.get();
-    uint32_t frame_size = frame.size;
+    uint8_t* frame_buf = frame.buffer.data();
+    uint32_t frame_size = frame.buffer.size();
 
     if (frame.timestamp == 0) {
         frame.timestamp = GetTimestamp();
