@@ -6,7 +6,7 @@ using namespace xop;
 TcpConnection::TcpConnection(TaskScheduler *task_scheduler, SOCKET sockfd)
 	: task_scheduler_(task_scheduler)
 	, read_buffer_(new BufferReader)
-	, write_buffer_(new BufferWriter(50000))
+	, write_buffer_(new BufferWriter(500))
 	, channel_(new Channel(sockfd))
 {
 	is_closed_ = false;

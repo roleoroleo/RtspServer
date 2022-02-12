@@ -1,8 +1,8 @@
 // PHZ
 // 2018-5-16
 
-#ifndef XOP_G711A_SOURCE_H
-#define XOP_G711A_SOURCE_H
+#ifndef XOP_PCM_SOURCE_H
+#define XOP_PCM_SOURCE_H
 
 #include "MediaSource.h"
 #include "rtp.h"
@@ -10,13 +10,13 @@
 namespace xop
 {
 
-class G711ASource : public MediaSource
+class PCMSource : public MediaSource
 {
 public:
-	static G711ASource* CreateNew();
-	virtual ~G711ASource();
+	static PCMSource* CreateNew();
+	virtual ~PCMSource();
 
-	uint32_t GetSampleRate() const
+	uint32_t GetSamplerate() const
 	{ return samplerate_; }
 
 	uint32_t GetChannels() const
@@ -28,18 +28,13 @@ public:
 
 	virtual bool HandleFrame(MediaChannelId channel_id, AVFrame frame);
 
-	static int64_t GetTimestamp();
-
-	void SetConversion(bool linear, uint32_t endianness);
-
+	static int64_t GetTimestamp(uint32_t sampleRate);
 
 private:
-	G711ASource();
+	PCMSource(uint32_t samplerate, uint32_t channels);
 
 	uint32_t samplerate_ = 8000;
 	uint32_t channels_ = 1;
-	bool linear_ = 0;
-	uint32_t endianness_ = 0;
 };
 
 }

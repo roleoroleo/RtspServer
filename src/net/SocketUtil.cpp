@@ -95,12 +95,13 @@ void SocketUtil::SetNoSigpipe(SOCKET sockfd)
 
 void SocketUtil::SetSendBufSize(SOCKET sockfd, int size)
 {
-    setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&size, sizeof(size));
+    if (setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&size, sizeof(size)))
+      std::cerr << "Error setting SO_SNDBUF " << std::endl;
 }
 
 void SocketUtil::SetRecvBufSize(SOCKET sockfd, int size)
 {
-    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&size, sizeof(size)) < 0) 
+    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&size, sizeof(size)) < 0)
       std::cerr << "Error setting SO_RCVBUF to " << size << std::endl;
 }
 
