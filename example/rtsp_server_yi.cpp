@@ -249,14 +249,14 @@ int main(int argc, char **argv)
         if (audio == AUDIO_AAC) {
             audio_file.SetType(AudioFile::AAC);
             if(!audio_file.Open(AUDIO_AAC_BUFFER_FILE)) {
-                printf("Open %s failed.\n", AUDIO_AAC_BUFFER_FILE);
-                return -2;
+                printf("Open %s failed, disable audio.\n", AUDIO_AAC_BUFFER_FILE);
+                audio = AUDIO_NONE;
             }
         } else {
             audio_file.SetType(AudioFile::PCM);
             if(!audio_file.Open(AUDIO_PCM_BUFFER_FILE)) {
-                printf("Open %s failed.\n", AUDIO_PCM_BUFFER_FILE);
-                return -2;
+                printf("Open %s failed, disable audio.\n", AUDIO_PCM_BUFFER_FILE);
+                audio = AUDIO_NONE;
             }
         }
     }
