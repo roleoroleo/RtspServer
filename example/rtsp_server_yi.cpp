@@ -24,10 +24,6 @@
 #define RESOLUTION_HIGH 1080
 #define RESOLUTION_BOTH 1440
 
-#define CODEC_NONE 0
-#define CODEC_H264 264
-#define CODEC_H265 265
-
 #define AUDIO_NONE 0
 #define AUDIO_PCM  1
 #define AUDIO_ALAW 2
@@ -91,8 +87,8 @@ int main(int argc, char **argv)
     char *endptr;
 
     resolution = RESOLUTION_HIGH;
-    codec_low = CODEC_H264;
-    codec_high = CODEC_H264;
+    codec_low = CODEC_NONE;
+    codec_high = CODEC_NONE;
     audio = 1;
     port = DEFAULT_PORT;
 
@@ -225,8 +221,10 @@ int main(int argc, char **argv)
     }
 
     printf("Resolution: %s\n", (resolution==RESOLUTION_BOTH)?"both":((resolution==RESOLUTION_HIGH)?"high":"low"));
-    printf("Codec low: h%d\n", codec_low);
-    printf("Codec high: h%d\n", codec_high);
+    if (codec_low != CODEC_NONE)
+        printf("Codec low: h%d\n", codec_low);
+    if (codec_high != CODEC_NONE)
+        printf("Codec high: h%d\n", codec_high);
     printf("Audio: %d\n", audio);
     printf("Port: %d\n", port);
     printf("User: %s\n", user.c_str());
@@ -296,6 +294,10 @@ int main(int argc, char **argv)
 
     if ((resolution == RESOLUTION_HIGH) || (resolution == RESOLUTION_BOTH)) {
         session_high = xop::MediaSession::CreateNew(suffix_high);
+        if (codec_high == CODEC_NONE) {
+            video_file_high.DetectCodec();
+            codec_high = video_file_high.GetCodec();
+        }
         if (codec_high == CODEC_H264) {
             session_high->AddSource(xop::channel_0, xop::H264Source::CreateNew());
         } else if (codec_high == CODEC_H265) {
@@ -337,6 +339,10 @@ int main(int argc, char **argv)
     }
     if ((resolution == RESOLUTION_LOW) || (resolution == RESOLUTION_BOTH)) {
         session_low = xop::MediaSession::CreateNew(suffix_low);
+        if (codec_low == CODEC_NONE) {
+            video_file_low.DetectCodec();
+            codec_low = video_file_low.GetCodec();
+        }
         if (codec_low == CODEC_H264) {
             session_low->AddSource(xop::channel_0, xop::H264Source::CreateNew());
         } else if (codec_high == CODEC_H265) {
@@ -439,7 +445,10 @@ void SendVideoFrameThread(xop::RtspServer* rtsp_server, xop::MediaSessionId sess
         bool end_of_frame = false;
         int video_size = video_file->ReadFrame((char *) video_buf.get(), buf_size, &end_of_frame);
         if(video_size > 0) {
-            videoFrame.timestamp = xop::H264Source::GetTimestamp();
+            if (video_file->GetCodec() == CODEC_H264)
+                videoFrame.timestamp = xop::H264Source::GetTimestamp();
+            else if (video_file->GetCodec() == CODEC_H265)
+                videoFrame.timestamp = xop::H265Source::GetTimestamp();
             videoFrame.buffer.assign(video_buf.get(), video_buf.get() + video_size);
             rtsp_server->PushFrame(session_id, xop::channel_0, videoFrame);
         } 
