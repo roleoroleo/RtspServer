@@ -2,6 +2,14 @@
 #include <cstring>
 #include <cstdio>
 #include <fcntl.h>
+#include <unistd.h>
+
+// Non-blocking read from the fifo
+static int fifo_read(FILE* file, char* dst, int count) {
+    if (file == NULL || count <= 0) return 0;
+    ssize_t n = read(fileno(file), dst, (size_t)count);
+    return n > 0 ? (int)n : 0;   // <=0: EAGAIN / EOF / error -> no data now
+}
 
 //unsigned char AudioFile::AAC_HEADER[]         = {0xFF, 0xF1, 0x60, 0x40, 0x00, 0x1F, 0xFC};
 //unsigned char AudioFile::AAC_HEADER_MASK[]    = {0xFF, 0xFF, 0xFF, 0xFC, 0x00, 0x1F, 0xFF};
@@ -55,7 +63,7 @@ void AudioFile::Reset()
     // Clear the fifo
     int bytes_read = 1;
     while (bytes_read > 0) {
-        bytes_read = (int) fread(m_buf, 1, m_buf_size, m_file);
+        bytes_read = fifo_read(m_file, m_buf, m_buf_size);
     }
 }
 
@@ -74,7 +82,7 @@ int AudioFile::ReadPCMFrame(char* in_buf, int in_buf_size)
         return -1;
     }
 
-    int bytes_read = (int) fread(m_buf, 1, m_buf_size, m_file);
+    int bytes_read = fifo_read(m_file, m_buf, m_buf_size);
     if (bytes_read > 0) {
         memcpy(in_buf, m_buf, bytes_read);
     }
@@ -96,8 +104,8 @@ int AudioFile::ReadAACFrame(char* in_buf, int in_buf_size)
     }
     // The buffer is empty
     if (m_buf_end_index == 0) {
-        bytes_read = (int) fread(m_buf + m_buf_end_index, 1,
-                m_buf_size - m_buf_end_index, m_file);
+        bytes_read = fifo_read(m_file, m_buf + m_buf_end_index,
+                m_buf_size - m_buf_end_index);
         m_buf_end_index += bytes_read;
     }
     if (m_buf_end_index <= n) {
@@ -137,8 +145,8 @@ find_adts:
         m_buf_start_index = j;
     } else {
         // ADTS not found, refill the buffer
-        bytes_read = (int) fread(m_buf + m_buf_end_index, 1,
-                m_buf_size - m_buf_end_index, m_file);
+        bytes_read = fifo_read(m_file, m_buf + m_buf_end_index,
+                m_buf_size - m_buf_end_index);
         m_buf_end_index += bytes_read;
         if (bytes_read > 0) {
             goto find_adts;
