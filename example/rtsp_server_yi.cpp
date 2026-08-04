@@ -347,7 +347,7 @@ int main(int argc, char **argv)
         }
         if (codec_low == CODEC_H264) {
             session_low->AddSource(xop::channel_0, xop::H264Source::CreateNew());
-        } else if (codec_high == CODEC_H265) {
+        } else if (codec_low == CODEC_H265) {
             session_low->AddSource(xop::channel_0, xop::H265Source::CreateNew());
         }
         if (audio == AUDIO_PCM) {
