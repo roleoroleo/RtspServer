@@ -185,9 +185,25 @@ find_nalu:
     }
 
     if(is_find_start && is_find_end) {
+        if (j - i > in_buf_size) {
+            // Access unit doesn't fit the caller's buffer: skip it and resync
+            // instead of overflowing in_buf.
+            m_buf_start_index = j;
+            return 0;
+        }
         memcpy(in_buf, &(m_buf[i]), j - i);
         m_buf_start_index = j;
     } else {
+        // Frame end not found yet.
+        if (m_buf_end_index >= m_buf_size) {
+            // The buffer filled without a complete access unit (the frame is
+            // larger than the buffer, or the stream lost sync): drop it and
+            // resync, instead of stalling forever on fread(..., 0, ...).
+            printf("VideoFile: access unit larger than buffer (%d bytes), resync\n", m_buf_size);
+            m_buf_start_index = 0;
+            m_buf_end_index = 0;
+            return 0;
+        }
         // NALU not found, refill the buffer
         bytes_read = (int)fread(m_buf + m_buf_end_index, 1,
                 m_buf_size - m_buf_end_index, m_file);
@@ -262,9 +278,25 @@ find_nalu:
     }
 
     if(is_find_start && is_find_end) {
+        if (j - i > in_buf_size) {
+            // Access unit doesn't fit the caller's buffer: skip it and resync
+            // instead of overflowing in_buf.
+            m_buf_start_index = j;
+            return 0;
+        }
         memcpy(in_buf, &(m_buf[i]), j - i);
         m_buf_start_index = j;
     } else {
+        // Frame end not found yet.
+        if (m_buf_end_index >= m_buf_size) {
+            // The buffer filled without a complete access unit (the frame is
+            // larger than the buffer, or the stream lost sync): drop it and
+            // resync, instead of stalling forever on fread(..., 0, ...).
+            printf("VideoFile: access unit larger than buffer (%d bytes), resync\n", m_buf_size);
+            m_buf_start_index = 0;
+            m_buf_end_index = 0;
+            return 0;
+        }
         // NALU not found, refill the buffer
         bytes_read = (int)fread(m_buf + m_buf_end_index, 1,
                 m_buf_size - m_buf_end_index, m_file);

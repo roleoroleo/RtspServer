@@ -79,8 +79,10 @@ int main(int argc, char **argv)
     std::string password;
     int debug;
 
-    VideoFile video_file_high(131072);
-    VideoFile video_file_low(65536);
+    // Buffers sized to hold a full access unit (incl. large high-res keyframes)
+    // plus the start of the next one; the parser resyncs if a frame ever exceeds this.
+    VideoFile video_file_high(524288);
+    VideoFile video_file_low(131072);
     AudioFile audio_file(4096);
 
     int c;
@@ -434,8 +436,8 @@ int main(int argc, char **argv)
 
 void SendVideoFrameThread(xop::RtspServer* rtsp_server, xop::MediaSessionId session_id, VideoFile* video_file)
 {
-    int buf_size = 262144;
-    char *p_video_buf;
+    // Must be >= the largest VideoFile internal buffer, so a full frame fits.
+    int buf_size = 524288;
     std::unique_ptr<uint8_t[]> video_buf(new uint8_t[buf_size]);
 
     xop::AVFrame videoFrame;
