@@ -274,9 +274,13 @@ bool RtspRequest::ParseAuthorization(std::string& message)
 	std::size_t pos = message.find("Authorization");
 	if (pos != std::string::npos) {
 		if ((pos = message.find("response=")) != std::string::npos) {
-			auth_response_ = message.substr(pos + 10, 32);
-			if (auth_response_.size() == 32) {
-				return true;
+			// Guard against substr() throwing std::out_of_range when the header
+			// is truncated right after "response=" (untrusted network input).
+			if (pos + 10 + 32 <= message.size()) {
+				auth_response_ = message.substr(pos + 10, 32);
+				if (auth_response_.size() == 32) {
+					return true;
+				}
 			}
 		}
 	}
