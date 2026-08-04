@@ -65,6 +65,7 @@ int AudioFile::ReadFrame(char* in_buf, int in_buf_size)
         return ReadPCMFrame(in_buf, in_buf_size);
     else if (m_type == AudioFile::AAC)
         return ReadAACFrame(in_buf, in_buf_size);
+    return 0;
 }
 
 int AudioFile::ReadPCMFrame(char* in_buf, int in_buf_size)

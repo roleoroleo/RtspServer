@@ -119,10 +119,11 @@ find_nalu:
 int VideoFile::ReadFrame(char* in_buf, int in_buf_size, bool* end)
 {
     if (m_codec == CODEC_H264) {
-        ReadFrameH264(in_buf, in_buf_size, end);
+        return ReadFrameH264(in_buf, in_buf_size, end);
     } else if (m_codec == CODEC_H265) {
-        ReadFrameH265(in_buf, in_buf_size, end);
+        return ReadFrameH265(in_buf, in_buf_size, end);
     }
+    return 0;
 }
 
 int VideoFile::ReadFrameH264(char* in_buf, int in_buf_size, bool* end)
