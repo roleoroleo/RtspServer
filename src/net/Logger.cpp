@@ -66,11 +66,10 @@ void Logger::Log(Priority priority, const char* __file, const char* __func, int 
 	std::unique_lock<std::mutex> lock(mutex_);
 
 	char buf[2048] = {0};
-	snprintf(buf, sizeof(buf), "[%s][%s:%s:%d] ", Priority_To_String[priority],  __file, __func, __line);
+	sprintf(buf, "[%s][%s:%s:%d] ", Priority_To_String[priority],  __file, __func, __line);
 	va_list args;
 	va_start(args, fmt);
-	size_t prefix_len = strlen(buf);
-	vsnprintf(buf + prefix_len, sizeof(buf) - prefix_len, fmt, args);
+	vsprintf(buf + strlen(buf), fmt, args);
 	va_end(args);
 	this->Write(std::string(buf));
 }
@@ -80,11 +79,10 @@ void Logger::Log2(Priority priority, const char *fmt, ...)
 	std::unique_lock<std::mutex> lock(mutex_);
 
 	char buf[4096] = { 0 };
-	snprintf(buf, sizeof(buf), "[%s] ", Priority_To_String[priority]);
+	sprintf(buf, "[%s] ", Priority_To_String[priority]);  
 	va_list args;
 	va_start(args, fmt);
-	size_t prefix_len = strlen(buf);
-	vsnprintf(buf + prefix_len, sizeof(buf) - prefix_len, fmt, args);
+	vsprintf(buf + strlen(buf), fmt, args);
 	va_end(args);
 	this->Write(std::string(buf));
 }

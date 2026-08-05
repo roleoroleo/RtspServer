@@ -1,4 +1,4 @@
-// PHZ
+﻿// PHZ
 // 2018-5-16
 
 #ifndef XOP_G711A_SOURCE_H
@@ -30,16 +30,11 @@ public:
 
 	static int64_t GetTimestamp();
 
-	void SetConversion(bool linear, uint32_t endianness);
-
-
 private:
 	G711ASource();
 
-	uint32_t samplerate_ = 8000;
-	uint32_t channels_ = 1;
-	bool linear_ = 0;
-	uint32_t endianness_ = 0;
+	uint32_t samplerate_ = 8000;   
+	uint32_t channels_ = 1;       
 };
 
 }

@@ -102,7 +102,7 @@ private:
 
 	static const char kCRLF[];
 	static const uint32_t MAX_BYTES_PER_READ = 4096;
-	static const uint32_t MAX_BUFFER_SIZE = 1024 * 256;
+	static const uint32_t MAX_BUFFER_SIZE = 1024 * 100000;
 };
 
 }

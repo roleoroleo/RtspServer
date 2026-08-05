@@ -16,6 +16,11 @@ DigestAuthenticator::~DigestAuthenticator()
 
 }
 
+std::string DigestAuthenticator::GetNonce()
+{
+	return md5::generate_nonce();
+}
+
 std::string DigestAuthenticator::GetResponse(std::string nonce, std::string cmd, std::string url)
 {
 	//md5(md5(<username>:<realm> : <password>) :<nonce> : md5(<cmd>:<url>))
@@ -27,7 +32,8 @@ std::string DigestAuthenticator::GetResponse(std::string nonce, std::string cmd,
 }
 
 bool DigestAuthenticator::Authenticate(
-    std::shared_ptr<RtspRequest> rtsp_request, const std::string& nonce)
+    std::shared_ptr<RtspRequest> rtsp_request,
+    std::string &nonce)
 {
   std::string cmd = rtsp_request->MethodToString[rtsp_request->GetMethod()];
   std::string url = rtsp_request->GetRtspUrl();
@@ -44,8 +50,8 @@ bool DigestAuthenticator::Authenticate(
 size_t DigestAuthenticator::GetFailedResponse(
     std::shared_ptr<RtspRequest> rtsp_request,
     std::shared_ptr<char> buf,
-    size_t size, std::string& nonce)
+    size_t size)
 {
-  nonce = md5::generate_nonce();
+  std::string nonce = md5::generate_nonce();
   return rtsp_request->BuildUnauthorizedRes(buf.get(), size, realm_.c_str(), nonce.c_str());
 }

@@ -106,9 +106,6 @@ void* MemoryManager::Alloc(uint32_t size)
 	} 
 
 	MemoryBlock *block = (MemoryBlock*)malloc(size + sizeof(MemoryBlock));
-	if (block == nullptr) {
-		return nullptr;   // out of memory: let the caller handle it, don't deref NULL
-	}
 	block->block_id = 0;
 	block->pool = nullptr;
 	block->next = nullptr;

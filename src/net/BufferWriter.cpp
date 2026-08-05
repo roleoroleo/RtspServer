@@ -81,7 +81,7 @@ bool BufferWriter::Append(const char* data, uint32_t size, uint32_t index)
 	}
      
 	Packet pkt;
-	pkt.data.reset(new char[size+512], std::default_delete<char[]>());
+	pkt.data.reset(new char[size+512]);
 	memcpy(pkt.data.get(), data, size);
 	pkt.size = size;
 	pkt.writeIndex = index;
@@ -115,7 +115,7 @@ int BufferWriter::Send(SOCKET sockfd, int timeout)
 			}
 		}
 		else if (ret < 0) {
-#if defined(__linux) || defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#if defined(__linux) || defined(__linux__) || defined(__FreeBSD__)
 		if (errno == EINTR || errno == EAGAIN) 
 #elif defined(WIN32) || defined(_WIN32)
 			int error = WSAGetLastError();

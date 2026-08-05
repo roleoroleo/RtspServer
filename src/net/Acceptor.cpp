@@ -32,12 +32,10 @@ int Acceptor::Listen(std::string ip, uint16_t port)
 	SocketUtil::SetNonBlock(sockfd);
 
 	if (!tcp_socket_->Bind(ip, port)) {
-		tcp_socket_->Close();
 		return -1;
 	}
 
 	if (!tcp_socket_->Listen(1024)) {
-		tcp_socket_->Close();
 		return -1;
 	}
 

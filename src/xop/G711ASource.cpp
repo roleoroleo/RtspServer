@@ -1,4 +1,4 @@
-// PHZ
+﻿// PHZ
 // 2018-5-16
 
 #if defined(WIN32) || defined(_WIN32) 
@@ -7,12 +7,11 @@
 #endif
 #endif
 #include "G711ASource.h"
-#include "XLawAudioFilter.h"
 #include <cstdio>
 #include <chrono>
 #if defined(__linux) || defined(__linux__) 
 #include <sys/time.h>
-#endif
+#endif 
 
 using namespace xop;
 using namespace std;
@@ -55,10 +54,6 @@ bool G711ASource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 	uint8_t *frame_buf  = frame.buffer.data();
 	uint32_t frame_size = frame.buffer.size();
 
-	if (linear_) {
-		frame_size = XLawAudioFilter::lin2alaw(frame_buf, frame_size, endianness_);
-	}
-
 	RtpPacket rtp_pkt;
 	rtp_pkt.type = frame.type;
 	rtp_pkt.timestamp = frame.timestamp;
@@ -80,8 +75,3 @@ int64_t G711ASource::GetTimestamp()
 	return (int64_t)((time_point.time_since_epoch().count()+500)/1000*8);
 }
 
-void G711ASource::SetConversion(bool linear, uint32_t endianness)
-{
-	linear_ = linear;
-	endianness_ = endianness;
-}
