@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <fcntl.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 long long current_timestamp() {
     struct timeval te;
@@ -11,6 +12,13 @@ long long current_timestamp() {
     long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // calculate milliseconds
 
     return milliseconds;
+}
+
+// Non-blocking read from the fifo
+static int fifo_read(FILE* file, char* dst, int count) {
+    if (file == NULL || count <= 0) return 0;
+    ssize_t n = read(fileno(file), dst, (size_t)count);
+    return n > 0 ? (int)n : 0;   // <=0: EAGAIN / EOF / error -> no data now
 }
 
 VideoFile::VideoFile(int buf_size): m_buf_size(buf_size)
@@ -73,8 +81,8 @@ void VideoFile::DetectCodec()
     }
     // The buffer is empty
     if (m_buf_end_index == 0) {
-        bytes_read = (int)fread(m_buf + m_buf_end_index, 1,
-                m_buf_size - m_buf_end_index, m_file);
+        bytes_read = fifo_read(m_file, m_buf + m_buf_end_index,
+                m_buf_size - m_buf_end_index);
         m_buf_end_index += bytes_read;
     }
 
@@ -104,8 +112,8 @@ find_nalu:
 
     if(codec_type == CODEC_NONE) {
         // NALU not found, refill the buffer
-        bytes_read = (int)fread(m_buf + m_buf_end_index, 1,
-                m_buf_size - m_buf_end_index, m_file);
+        bytes_read = fifo_read(m_file, m_buf + m_buf_end_index,
+                m_buf_size - m_buf_end_index);
         m_buf_end_index += bytes_read;
         xop::Timer::Sleep(10);
         goto find_nalu;
@@ -119,10 +127,11 @@ find_nalu:
 int VideoFile::ReadFrame(char* in_buf, int in_buf_size, bool* end)
 {
     if (m_codec == CODEC_H264) {
-        ReadFrameH264(in_buf, in_buf_size, end);
+        return ReadFrameH264(in_buf, in_buf_size, end);
     } else if (m_codec == CODEC_H265) {
-        ReadFrameH265(in_buf, in_buf_size, end);
+        return ReadFrameH265(in_buf, in_buf_size, end);
     }
+    return 0;
 }
 
 int VideoFile::ReadFrameH264(char* in_buf, int in_buf_size, bool* end)
@@ -139,8 +148,8 @@ int VideoFile::ReadFrameH264(char* in_buf, int in_buf_size, bool* end)
     }
     // The buffer is empty
     if (m_buf_end_index == 0) {
-        bytes_read = (int)fread(m_buf + m_buf_end_index, 1,
-                m_buf_size - m_buf_end_index, m_file);
+        bytes_read = fifo_read(m_file, m_buf + m_buf_end_index,
+                m_buf_size - m_buf_end_index);
         m_buf_end_index += bytes_read;
     }
     if (m_buf_end_index <= 5) {
@@ -185,12 +194,28 @@ find_nalu:
     }
 
     if(is_find_start && is_find_end) {
+        if (j - i > in_buf_size) {
+            // Access unit doesn't fit the caller's buffer: skip it and resync
+            // instead of overflowing in_buf.
+            m_buf_start_index = j;
+            return 0;
+        }
         memcpy(in_buf, &(m_buf[i]), j - i);
         m_buf_start_index = j;
     } else {
+        // Frame end not found yet.
+        if (m_buf_end_index >= m_buf_size) {
+            // The buffer filled without a complete access unit (the frame is
+            // larger than the buffer, or the stream lost sync): drop it and
+            // resync, instead of stalling forever on fread(..., 0, ...).
+            printf("VideoFile: access unit larger than buffer (%d bytes), resync\n", m_buf_size);
+            m_buf_start_index = 0;
+            m_buf_end_index = 0;
+            return 0;
+        }
         // NALU not found, refill the buffer
-        bytes_read = (int)fread(m_buf + m_buf_end_index, 1,
-                m_buf_size - m_buf_end_index, m_file);
+        bytes_read = fifo_read(m_file, m_buf + m_buf_end_index,
+                m_buf_size - m_buf_end_index);
         m_buf_end_index += bytes_read;
         if (bytes_read > 0) {
             goto find_nalu;
@@ -216,8 +241,8 @@ int VideoFile::ReadFrameH265(char* in_buf, int in_buf_size, bool* end)
     }
     // The buffer is empty
     if (m_buf_end_index == 0) {
-        bytes_read = (int)fread(m_buf + m_buf_end_index, 1,
-                m_buf_size - m_buf_end_index, m_file);
+        bytes_read = fifo_read(m_file, m_buf + m_buf_end_index,
+                m_buf_size - m_buf_end_index);
         m_buf_end_index += bytes_read;
     }
     if (m_buf_end_index <= 5) {
@@ -262,12 +287,28 @@ find_nalu:
     }
 
     if(is_find_start && is_find_end) {
+        if (j - i > in_buf_size) {
+            // Access unit doesn't fit the caller's buffer: skip it and resync
+            // instead of overflowing in_buf.
+            m_buf_start_index = j;
+            return 0;
+        }
         memcpy(in_buf, &(m_buf[i]), j - i);
         m_buf_start_index = j;
     } else {
+        // Frame end not found yet.
+        if (m_buf_end_index >= m_buf_size) {
+            // The buffer filled without a complete access unit (the frame is
+            // larger than the buffer, or the stream lost sync): drop it and
+            // resync, instead of stalling forever on fread(..., 0, ...).
+            printf("VideoFile: access unit larger than buffer (%d bytes), resync\n", m_buf_size);
+            m_buf_start_index = 0;
+            m_buf_end_index = 0;
+            return 0;
+        }
         // NALU not found, refill the buffer
-        bytes_read = (int)fread(m_buf + m_buf_end_index, 1,
-                m_buf_size - m_buf_end_index, m_file);
+        bytes_read = fifo_read(m_file, m_buf + m_buf_end_index,
+                m_buf_size - m_buf_end_index);
         m_buf_end_index += bytes_read;
         if (bytes_read > 0) {
             goto find_nalu;

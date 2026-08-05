@@ -87,5 +87,5 @@ bool PCMSource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 int64_t PCMSource::GetTimestamp(uint32_t sampleRate)
 {
 	auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::steady_clock::now());
-	return (int64_t)((time_point.time_since_epoch().count()+500) / 1000 * 4);
+	return (int64_t)((time_point.time_since_epoch().count()+500) / 1000 * sampleRate / 1000);
 }

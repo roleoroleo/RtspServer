@@ -61,7 +61,7 @@ bool RtspRequest::ParseRequestLine(const char* begin, const char* end)
 	char url[512] = {0};
 	char version[64] = {0};
 
-	if(sscanf(message.c_str(), "%s %s %s", method, url, version) != 3) {
+	if(sscanf(message.c_str(), "%63s %511s %63s", method, url, version) != 3) {
 		return true; 
 	}
 
@@ -98,10 +98,10 @@ bool RtspRequest::ParseRequestLine(const char* begin, const char* end)
 	char ip[64] = {0};
 	char suffix[256] = {0};
 
-	if(sscanf(url+7, "%[^:]:%hu/%s", ip, &port, suffix) == 3) {
+	if(sscanf(url+7, "%63[^:]:%hu/%255s", ip, &port, suffix) == 3) {
 
 	}
-	else if(sscanf(url+7, "%[^/]/%s", ip, suffix) == 2) {
+	else if(sscanf(url+7, "%63[^/]/%255s", ip, suffix) == 2) {
 		port = 554;
 	}
 	else {
@@ -274,9 +274,13 @@ bool RtspRequest::ParseAuthorization(std::string& message)
 	std::size_t pos = message.find("Authorization");
 	if (pos != std::string::npos) {
 		if ((pos = message.find("response=")) != std::string::npos) {
-			auth_response_ = message.substr(pos + 10, 32);
-			if (auth_response_.size() == 32) {
-				return true;
+			// Guard against substr() throwing std::out_of_range when the header
+			// is truncated right after "response=" (untrusted network input).
+			if (pos + 10 + 32 <= message.size()) {
+				auth_response_ = message.substr(pos + 10, 32);
+				if (auth_response_.size() == 32) {
+					return true;
+				}
 			}
 		}
 	}
