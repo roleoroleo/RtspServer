@@ -96,12 +96,10 @@ void SendFrameThread(xop::RtspServer* rtsp_server, xop::MediaSessionId session_i
 		bool end_of_frame = false;
 		int frame_size = h264_file->ReadFrame((char*)frame_buf.get(), buf_size, &end_of_frame);
 		if(frame_size > 0) {
-			xop::AVFrame videoFrame = {0};
-			videoFrame.type = 0; 
-			videoFrame.size = frame_size;
+			xop::AVFrame videoFrame;
+			videoFrame.type = 0;
 			videoFrame.timestamp = xop::H264Source::GetTimestamp();
-			videoFrame.buffer.reset(new uint8_t[videoFrame.size]);    
-			memcpy(videoFrame.buffer.get(), frame_buf.get(), videoFrame.size);
+			videoFrame.buffer.assign(frame_buf.get(), frame_buf.get() + frame_size);
 			rtsp_server->PushFrame(session_id, xop::channel_0, videoFrame);
 		}
 		else {
