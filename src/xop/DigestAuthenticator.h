@@ -29,14 +29,13 @@ public:
 
 	std::string GetResponse(std::string nonce, std::string cmd, std::string url);
 
-	bool Authenticate(std::shared_ptr<RtspRequest> request);
-	size_t GetFailedResponse(std::shared_ptr<RtspRequest> request, std::shared_ptr<char> buf, size_t size);
+	bool Authenticate(std::shared_ptr<RtspRequest> request, const std::string& nonce);
+	size_t GetFailedResponse(std::shared_ptr<RtspRequest> request, std::shared_ptr<char> buf, size_t size, std::string& nonce);
 
 private:
 	std::string realm_;
 	std::string username_;
 	std::string password_;
-	std::string nonce_;
 };
 
 }
