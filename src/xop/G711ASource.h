@@ -32,12 +32,11 @@ public:
 
 	void SetConversion(bool linear, uint32_t endianness);
 
-
 private:
 	G711ASource();
 
-	uint32_t samplerate_ = 8000;
-	uint32_t channels_ = 1;
+	uint32_t samplerate_ = 8000;   
+	uint32_t channels_ = 1;       
 	bool linear_ = 0;
 	uint32_t endianness_ = 0;
 };

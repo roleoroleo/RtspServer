@@ -73,7 +73,6 @@
 #include <chrono>
 #include <cstdint>
 #include <random>
-#include "tostring.h"
 
 //namespace websocketpp {
 /// Provides MD5 hashing functionality
@@ -453,7 +452,7 @@ inline std::string generate_nonce()
 	auto timePoint = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now());
 	uint32_t timestamp = (uint32_t)timePoint.time_since_epoch().count();
 
-	return md5_hash_hex(SSTR(timestamp + rd()));
+	return md5_hash_hex(std::to_string(timestamp + rd()));
 }
 
 } // md5

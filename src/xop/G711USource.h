@@ -23,20 +23,17 @@ public:
 
 	virtual std::string GetAttribute();
 
-	virtual bool HandleFrame(MediaChannelId channel_id, AVFrame frame);
+	bool HandleFrame(MediaChannelId channel_id, AVFrame frame);
 
 	static int64_t GetTimestamp();
 
 	void SetConversion(bool linear, uint32_t endianness);
-
 
 private:
 	G711USource();
 
 	uint32_t samplerate_ = 8000;
 	uint32_t channels_ = 1;
-	bool linear_ = 0;
-	uint32_t endianness_ = 0;
 };
 
 }

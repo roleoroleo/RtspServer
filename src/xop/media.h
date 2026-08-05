@@ -18,21 +18,22 @@ enum MediaType
 	PCM  = 97,
 	H264 = 96,
 	AAC  = 37,
+	AV1  = 98,
 	H265 = 265,
 	NONE
 };	
 
 enum FrameType
 {
-	VIDEO_FRAME_I = 0x01,
+	VIDEO_FRAME_I = 0x01,	  
 	VIDEO_FRAME_P = 0x02,
-	VIDEO_FRAME_B = 0x03,
-	AUDIO_FRAME   = 0x11,
+	VIDEO_FRAME_B = 0x03,    
+	AUDIO_FRAME   = 0x11,   
 };
 
 struct AVFrame
 {
-	AVFrame() : type(0), timestamp(0) {}
+	AVFrame() : type(0), timestamp(0), last(1) {}
 	AVFrame(const uint8_t *data, std::size_t size) : AVFrame()
 	{
 		buffer.reserve(size);
@@ -42,6 +43,7 @@ struct AVFrame
 	std::vector<uint8_t> buffer;     /* 帧数据 */
 	uint8_t  type;				     /* 帧类型 */
 	int64_t timestamp;		  	     /* 时间戳 */
+	uint8_t  last;                   /* RTP marker bit (1=last packet of frame) */
 };
 
 static const int MAX_MEDIA_CHANNEL = 2;

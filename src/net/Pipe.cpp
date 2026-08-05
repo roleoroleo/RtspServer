@@ -6,6 +6,10 @@
 #include <random>
 #include <string>
 #include <array>
+#if !defined(WIN32) && !defined(_WIN32)
+#include <fcntl.h>
+#include <unistd.h>
+#endif
 
 using namespace xop;
 
@@ -56,9 +60,21 @@ bool Pipe::Create()
 
 	SocketUtil::SetNonBlock(pipe_fd_[0]);
 	SocketUtil::SetNonBlock(pipe_fd_[1]);
-#elif defined(__linux) || defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#elif defined(__linux) || defined(__linux__)
 	if (pipe2(pipe_fd_, O_NONBLOCK | O_CLOEXEC) < 0) {
 		return false;
+	}
+#else /* macOS/BSD: no pipe2(), emulate with pipe() + fcntl() */
+	if (pipe(pipe_fd_) < 0) {
+		return false;
+	}
+	for (int i = 0; i < 2; i++) {
+		if (fcntl(pipe_fd_[i], F_SETFL, fcntl(pipe_fd_[i], F_GETFL) | O_NONBLOCK) < 0 ||
+		    fcntl(pipe_fd_[i], F_SETFD, FD_CLOEXEC) < 0) {
+			::close(pipe_fd_[0]);
+			::close(pipe_fd_[1]);
+			return false;
+		}
 	}
 #endif
 	return true;
@@ -68,7 +84,7 @@ int Pipe::Write(void *buf, int len)
 {
 #if defined(WIN32) || defined(_WIN32) 
     return ::send(pipe_fd_[1], (char *)buf, len, 0);
-#elif defined(__linux) || defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#else /* Not Windows */
     return ::write(pipe_fd_[1], buf, len);
 #endif 
 }
@@ -77,7 +93,7 @@ int Pipe::Read(void *buf, int len)
 {
 #if defined(WIN32) || defined(_WIN32) 
     return recv(pipe_fd_[0], (char *)buf, len, 0);
-#elif defined(__linux) || defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#else /* Not Windows */
     return ::read(pipe_fd_[0], buf, len);
 #endif 
 }
@@ -87,7 +103,7 @@ void Pipe::Close()
 #if defined(WIN32) || defined(_WIN32) 
 	closesocket(pipe_fd_[0]);
 	closesocket(pipe_fd_[1]);
-#elif defined(__linux) || defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#else /* Not Windows */
 	::close(pipe_fd_[0]);
 	::close(pipe_fd_[1]);
 #endif
