@@ -95,6 +95,11 @@ bool AACSource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 		adts_size = ADTS_SIZE;
 	}
 
+	// Reject a frame shorter than its declared ADTS header
+	if (frame.buffer.size() < (size_t)adts_size) {
+		return false;
+	}
+
 	uint8_t *frame_buf = frame.buffer.data() + adts_size;
 	uint32_t frame_size = frame.buffer.size() - adts_size;
 
