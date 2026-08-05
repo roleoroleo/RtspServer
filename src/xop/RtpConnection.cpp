@@ -247,7 +247,7 @@ int RtpConnection::SendRtpPacket(MediaChannelId channel_id, RtpPacket pkt)
 
 	RtspConnection *rtsp_conn = (RtspConnection *)conn.get();
 
-	bool ret = rtsp_conn->task_scheduler_->AddTriggerEvent([this, channel_id, pkt] {
+	bool ret = rtsp_conn->task_scheduler_->AddTriggerEvent([this, conn, channel_id, pkt] {
 		this->SetFrameType(pkt.type);
 		this->SetRtpHeader(channel_id, pkt);
 		if((media_channel_info_[channel_id].is_play || media_channel_info_[channel_id].is_record) && has_key_frame_ ) {            
