@@ -80,14 +80,14 @@ string H264Source::GetAttribute()
         std::string pps_b64 = Base64Encode(pps_.data(), pps_.size());
 
         char buf[512];
-        sprintf(buf, "\r\na=fmtp:96 packetization-mode=1;profile-level-id=%06X;sprop-parameter-sets=%s,%s",
+        snprintf(buf, sizeof(buf), "\r\na=fmtp:96 packetization-mode=1;profile-level-id=%06X;sprop-parameter-sets=%s,%s",
                 profile_level_id, sps_b64.c_str(), pps_b64.c_str());
         attr += buf;
     }
 
     if (width_ > 0 && height_ > 0) {
         char buf[64];
-        sprintf(buf, "\r\na=x-dimensions:%u,%u", width_, height_);
+        snprintf(buf, sizeof(buf), "\r\na=x-dimensions:%u,%u", width_, height_);
         attr += buf;
     }
     return attr;
