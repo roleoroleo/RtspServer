@@ -416,7 +416,7 @@ bool RtspConnection::HandleAuthentication()
 			has_auth_ = true;
     } else {
       std::shared_ptr<char> res(new char[4096], std::default_delete<char[]>());
-      size_t size = authenticator_->GetFailedResponse(rtsp_request_, res, 4096);
+      size_t size = authenticator_->GetFailedResponse(rtsp_request_, res, 4096, _nonce);
       SendRtspMessage(res, size);
       return false;
     }

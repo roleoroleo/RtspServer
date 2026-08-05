@@ -1,8 +1,5 @@
-// PHZ
-// 2018-5-16
-
-#ifndef XOP_G711A_SOURCE_H
-#define XOP_G711A_SOURCE_H
+#ifndef XOP_G711U_SOURCE_H
+#define XOP_G711U_SOURCE_H
 
 #include "MediaSource.h"
 #include "rtp.h"
@@ -10,11 +7,11 @@
 namespace xop
 {
 
-class G711ASource : public MediaSource
+class G711USource : public MediaSource
 {
 public:
-	static G711ASource* CreateNew();
-	virtual ~G711ASource();
+	static G711USource* CreateNew();
+	virtual ~G711USource();
 
 	uint32_t GetSampleRate() const
 	{ return samplerate_; }
@@ -34,7 +31,7 @@ public:
 
 
 private:
-	G711ASource();
+	G711USource();
 
 	uint32_t samplerate_ = 8000;
 	uint32_t channels_ = 1;

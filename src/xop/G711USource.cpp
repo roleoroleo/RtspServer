@@ -1,12 +1,9 @@
-// PHZ
-// 2018-5-16
-
 #if defined(WIN32) || defined(_WIN32) 
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 #endif
-#include "G711ASource.h"
+#include "G711USource.h"
 #include "XLawAudioFilter.h"
 #include <cstdio>
 #include <chrono>
@@ -17,36 +14,36 @@
 using namespace xop;
 using namespace std;
 
-G711ASource::G711ASource()
+G711USource::G711USource()
 {
-	payload_    = 8;
-	media_type_ = PCMA;
+	payload_    = 0;
+	media_type_ = PCMU;
 	clock_rate_ = 8000;
 }
 
-G711ASource* G711ASource::CreateNew()
+G711USource* G711USource::CreateNew()
 {
-    return new G711ASource();
+    return new G711USource();
 }
 
-G711ASource::~G711ASource()
+G711USource::~G711USource()
 {
 	
 }
 
-string G711ASource::GetMediaDescription(uint16_t port)
+string G711USource::GetMediaDescription(uint16_t port)
 {
 	char buf[100] = {0};
-	sprintf(buf, "m=audio %hu RTP/AVP 8", port);
+	sprintf(buf, "m=audio %hu RTP/AVP 0", port);
 	return string(buf);
 }
 	
-string G711ASource::GetAttribute()
+string G711USource::GetAttribute()
 {
-    return string("a=rtpmap:8 PCMA/8000/1");
+    return string("a=rtpmap:0 PCMU/8000/1");
 }
 
-bool G711ASource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
+bool G711USource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 {
 	if (frame.buffer.size() > MAX_RTP_PAYLOAD_SIZE) {
 		return false;
@@ -56,7 +53,7 @@ bool G711ASource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 	uint32_t frame_size = frame.buffer.size();
 
 	if (linear_) {
-		frame_size = XLawAudioFilter::lin2alaw(frame_buf, frame_size, endianness_);
+		frame_size = XLawAudioFilter::lin2ulaw(frame_buf, frame_size, endianness_);
 	}
 
 	RtpPacket rtp_pkt;
@@ -74,13 +71,13 @@ bool G711ASource::HandleFrame(MediaChannelId channel_id, AVFrame frame)
 	return true;
 }
 
-int64_t G711ASource::GetTimestamp()
+int64_t G711USource::GetTimestamp()
 {
 	auto time_point = chrono::time_point_cast<chrono::microseconds>(chrono::steady_clock::now());
 	return (int64_t)((time_point.time_since_epoch().count()+500)/1000*8);
 }
 
-void G711ASource::SetConversion(bool linear, uint32_t endianness)
+void G711USource::SetConversion(bool linear, uint32_t endianness)
 {
 	linear_ = linear;
 	endianness_ = endianness;

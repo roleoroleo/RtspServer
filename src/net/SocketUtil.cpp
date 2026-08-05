@@ -23,7 +23,7 @@ bool SocketUtil::Bind(SOCKET sockfd, std::string ip, uint16_t port)
 
 void SocketUtil::SetNonBlock(SOCKET fd)
 {
-#if defined(__linux) || defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux) || defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
     int flags = fcntl(fd, F_GETFL, 0);
     fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 #elif defined(WIN32) || defined(_WIN32)
@@ -34,7 +34,7 @@ void SocketUtil::SetNonBlock(SOCKET fd)
 
 void SocketUtil::SetBlock(SOCKET fd, int write_timeout)
 {
-#if defined(__linux) || defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux) || defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
     int flags = fcntl(fd, F_GETFL, 0);
     fcntl(fd, F_SETFL, flags&(~O_NONBLOCK));
 #elif defined(WIN32) || defined(_WIN32)
@@ -45,7 +45,7 @@ void SocketUtil::SetBlock(SOCKET fd, int write_timeout)
     if(write_timeout > 0)
     {
 #ifdef SO_SNDTIMEO
-#if defined(__linux) || defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux) || defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
     struct timeval tv = {write_timeout/1000, (write_timeout%1000)*1000};
     setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char*)&tv, sizeof tv);
 #elif defined(WIN32) || defined(_WIN32)
@@ -95,12 +95,13 @@ void SocketUtil::SetNoSigpipe(SOCKET sockfd)
 
 void SocketUtil::SetSendBufSize(SOCKET sockfd, int size)
 {
-    setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&size, sizeof(size));
+    if (setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&size, sizeof(size)))
+      std::cerr << "Error setting SO_SNDBUF " << std::endl;
 }
 
 void SocketUtil::SetRecvBufSize(SOCKET sockfd, int size)
 {
-    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&size, sizeof(size)) < 0) 
+    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&size, sizeof(size)) < 0)
       std::cerr << "Error setting SO_RCVBUF to " << size << std::endl;
 }
 
@@ -168,7 +169,7 @@ int SocketUtil::GetPeerAddr(SOCKET sockfd, struct sockaddr_in *addr)
 
 void SocketUtil::Close(SOCKET sockfd)
 {
-#if defined(__linux) || defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux) || defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
     ::close(sockfd);
 #elif defined(WIN32) || defined(_WIN32)
     ::closesocket(sockfd);
