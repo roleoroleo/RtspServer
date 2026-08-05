@@ -65,7 +65,10 @@ void TcpServer::Stop()
 
 		while (1) {
 			Timer::Sleep(10);
-			if (connections_.empty()) {
+			mutex_.lock();
+			bool empty = connections_.empty();
+			mutex_.unlock();
+			if (empty) {
 				break;
 			}
 		}
